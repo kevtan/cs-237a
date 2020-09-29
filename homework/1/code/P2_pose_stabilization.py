@@ -32,7 +32,7 @@ class PoseController:
         Inputs:
             x,y,th: Current state
             t: Current time (you shouldn't need to use this)
-        Outputs: 
+        Outputs:
             V, om: Control actions
 
         Hints: You'll need to use the wrapToPi function. The np.sinc function
@@ -43,7 +43,11 @@ class PoseController:
         alpha = wrapToPi(angle_to_goal - th)
         rho = ((self.x_g - x) ** 2 + (self.y_g - y) ** 2) ** 0.5
         delta = wrapToPi(angle_to_goal - self.th_g)
-        if math.fabs(alpha) < ALPHA_THRES and rho < RHO_THRES and math.fabs(delta) < DELTA_THRES:
+        if (
+            math.fabs(alpha) < ALPHA_THRES
+            and rho < RHO_THRES
+            and math.fabs(delta) < DELTA_THRES
+        ):
             return 0, 0
         # compute control inputs
         V = self.k1 * rho * math.cos(alpha)
