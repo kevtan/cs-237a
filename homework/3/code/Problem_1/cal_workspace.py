@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
+import pdb  # TODO remove
+
 import matplotlib.pyplot as plt
 import numpy as np
-import pdb # TODO remove
 
 from cam_calibrator import CameraCalibrator
 
@@ -22,22 +23,23 @@ def main():
     #             so that you don't have to click through 23 images for each step
     # display_flag: True to display images and corners as they are loaded
     #               Feel free to change this to False while developing/debugging
-    n_disp_img = 10 # 23
+    n_disp_img = 10  # 23
     display_flag = True
 
-    cc.loadImages(cal_img_path, name, n_corners, square_length, n_disp_img, display_flag)
+    cc.loadImages(cal_img_path, name, n_corners,
+                  square_length, n_disp_img, display_flag)
 
     # find the pixel image coordinates via feature extraction
     u_meas, v_meas = cc.getMeasuredPixImageCoord()
     X, Y = cc.genCornerCoordinates(u_meas, v_meas)
 
     # estimate homographies for each image
-    H = [cc.estimateHomography(u, v, x, y) for u, v, x, y in zip(u_meas, v_meas, X, Y)]
+    H = [cc.estimateHomography(u, v, x, y)
+         for u, v, x, y in zip(u_meas, v_meas, X, Y)]
 
     # use estimated homographies to determine true camera intrinsic parameters
     A = cc.getCameraIntrinsics(H)
 
-    
     R = []
     t = []
     for p in range(cc.n_chessboards):

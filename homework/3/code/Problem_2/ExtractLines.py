@@ -8,16 +8,18 @@
 # in the environment.
 ############################################################
 
-# Imports
-import numpy as np
-from PlotFunctions import *
 import itertools
 import pdb
 
+# Imports
+import numpy as np
+
+from PlotFunctions import *
 
 ############################################################
 # functions
 ############################################################
+
 
 def ExtractLines(RangeData, params):
     '''
@@ -49,15 +51,18 @@ def ExtractLines(RangeData, params):
     # This implementation pre-prepartitions the data according to the "MAX_P2P_DIST"
     # parameter. It forces line segmentation at sufficiently large range jumps.
     rho_diff = np.abs(rho[1:] - rho[:(len(rho)-1)])
-    LineBreak = np.hstack((np.where(rho_diff > params['MAX_P2P_DIST'])[0]+1, N_pts))
+    LineBreak = np.hstack(
+        (np.where(rho_diff > params['MAX_P2P_DIST'])[0]+1, N_pts))
     startIdx = 0
     for endIdx in LineBreak:
-        alpha_seg, r_seg, pointIdx_seg = SplitLinesRecursive(theta, rho, startIdx, endIdx, params)
+        alpha_seg, r_seg, pointIdx_seg = SplitLinesRecursive(
+            theta, rho, startIdx, endIdx, params)
         N_lines = r_seg.size
 
         ### Merge Lines ###
         if (N_lines > 1):
-            alpha_seg, r_seg, pointIdx_seg = MergeColinearNeigbors(theta, rho, alpha_seg, r_seg, pointIdx_seg, params)
+            alpha_seg, r_seg, pointIdx_seg = MergeColinearNeigbors(
+                theta, rho, alpha_seg, r_seg, pointIdx_seg, params)
         r = np.append(r, r_seg)
         alpha = np.append(alpha, alpha_seg)
         pointIdx = np.vstack((pointIdx, pointIdx_seg))
@@ -115,15 +120,19 @@ def SplitLinesRecursive(theta, rho, startIdx, endIdx, params):
     num_points = endIdx - startIdx
     if num_points <= params["MIN_POINTS_PER_SEGMENT"]:
         return np.array([alpha]), np.array([r]), np.array([[startIdx, endIdx]])
-    split = FindSplit(theta[startIdx:endIdx], rho[startIdx:endIdx], alpha, r, params)
+    split = FindSplit(theta[startIdx:endIdx],
+                      rho[startIdx:endIdx], alpha, r, params)
     if split == -1:
         return np.array([alpha]), np.array([r]), np.array([[startIdx, endIdx]])
-    alpha1, r1, i1 = SplitLinesRecursive(theta, rho, startIdx, startIdx+split, params)
-    alpha2, r2, i2 = SplitLinesRecursive(theta, rho, startIdx+split, endIdx, params)
+    alpha1, r1, i1 = SplitLinesRecursive(
+        theta, rho, startIdx, startIdx+split, params)
+    alpha2, r2, i2 = SplitLinesRecursive(
+        theta, rho, startIdx+split, endIdx, params)
     alphas = np.concatenate((alpha1, alpha2))
     rs = np.concatenate((r1, r2))
     indices = np.concatenate((i1, i2))
     return alphas, rs, indices
+
 
 def FindSplit(thetas, rhos, alpha, r, params):
     '''
@@ -159,6 +168,7 @@ def FindSplit(thetas, rhos, alpha, r, params):
             return max_indx
     return -1
 
+
 def FitLine(theta, rho):
     '''
     This function outputs a least squares best fit line to a segment of range
@@ -181,9 +191,10 @@ def FitLine(theta, rho):
     thetas = itertools.product(theta, theta)
     E = sum(r1*r2*np.cos(t1+t2) for (r1, r2), (t1, t2) in zip(rhos, thetas))
     denominator = D - (1. / n) * E
-    alpha  = 0.5 * np.arctan2(numerator, denominator) + np.pi/2.
+    alpha = 0.5 * np.arctan2(numerator, denominator) + np.pi/2.
     r = (1./n) * sum(r * np.cos(t - alpha) for r, t in zip(rho, theta))
     return alpha, r
+
 
 def MergeColinearNeigbors(theta, rho, alpha, r, pointIdx, params):
     '''
@@ -226,7 +237,7 @@ def MergeColinearNeigbors(theta, rho, alpha, r, pointIdx, params):
     return alphaOut, rOut, pointIdxOut
 
 
-#----------------------------------
+# ----------------------------------
 # ImportRangeData
 def ImportRangeData(filename):
 
@@ -236,7 +247,7 @@ def ImportRangeData(filename):
     theta = data[1:, 0]
     rho = data[1:, 1]
     return (x_r, y_r, theta, rho)
-#----------------------------------
+# ----------------------------------
 
 
 ############################################################
@@ -276,6 +287,7 @@ def main():
     plt.show(ax)
 
 ############################################################
+
 
 if __name__ == '__main__':
     try:

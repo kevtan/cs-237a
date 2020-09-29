@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
-import numpy as np
-import time
-import cv2
-import matplotlib.pyplot as plt
 import itertools
 import pdb
+import time
+
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def corr(F, I):
@@ -77,10 +78,10 @@ def main():
     filt3[:, 2] = 1
 
     filt4 = (1./273.)*np.array([[1, 4, 7, 4, 1],
-                              [4, 16, 26, 16, 4],
-                              [7, 26, 41, 26, 7],
-                              [4, 16, 26, 16, 4],
-                              [1, 4, 7, 4, 1]])
+                                [4, 16, 26, 16, 4],
+                                [7, 26, 41, 26, 7],
+                                [4, 16, 26, 16, 4],
+                                [1, 4, 7, 4, 1]])
     filt4 = np.expand_dims(filt4, -1)
 
     grayscale_filters = [filt1, filt2, filt3, filt4]

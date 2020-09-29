@@ -4,10 +4,10 @@
 # PlotFunctions.py
 ############################################################
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
-#----------------------------------
+# ----------------------------------
 # PlotScene
 #
 # Plots the room in which the robot collects rage data
@@ -61,7 +61,7 @@ def PlotScene():
     return ax
 
 
-#----------------------------------
+# ----------------------------------
 # PlotData
 #
 # Plots range point measurements
@@ -79,7 +79,7 @@ def PlotData(RangeData, ax):
     return ax
 
 
-#----------------------------------
+# ----------------------------------
 # PlotRays
 #
 # Plots lidar beams
@@ -97,7 +97,7 @@ def PlotRays(RangeData, ax):
         ax.plot([x_r, x[i]], [y_r, y[i]], 'b', linewidth=0.3)
     return ax
 
-#----------------------------------
+# ----------------------------------
 # PlotLines
 #
 # Plots extracted lines
