@@ -5,9 +5,9 @@ import numpy as np
 from utils import wrapToPi
 
 # command zero velocities once we are this close to the goal
-RHO_THRES = 0.05
-ALPHA_THRES = 0.1
-DELTA_THRES = 0.1
+THRESHOLD_RHO = 0.05
+THRESHOLD_ALPHA = 0.1
+THRESHOLD_DELTA = 0.1
 
 
 class PoseController:
@@ -17,7 +17,6 @@ class PoseController:
         self.k1 = k1
         self.k2 = k2
         self.k3 = k3
-
         self.V_max = V_max
         self.om_max = om_max
 
@@ -44,9 +43,9 @@ class PoseController:
         rho = ((self.x_g - x) ** 2 + (self.y_g - y) ** 2) ** 0.5
         delta = wrapToPi(angle_to_goal - self.th_g)
         if (
-            math.fabs(alpha) < ALPHA_THRES
-            and rho < RHO_THRES
-            and math.fabs(delta) < DELTA_THRES
+            math.fabs(alpha) < THRESHOLD_ALPHA
+            and rho < THRESHOLD_RHO
+            and math.fabs(delta) < THRESHOLD_DELTA
         ):
             return 0, 0
         # compute control inputs
