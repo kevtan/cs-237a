@@ -1,9 +1,10 @@
 """Quick scripts to test splrep and splev functions."""
 
-import numpy as np
 import pdb
-from scipy.interpolate import splrep, splev
+
+import numpy as np
 from matplotlib import pyplot as plt
+from scipy.interpolate import splev, splrep
 
 
 def plot_functions(*functions):
@@ -23,6 +24,7 @@ def plot_functions(*functions):
 #     (lambda x: 2 - x + x**2, 2, 3, 0.1)
 # ]
 # plot_functions(*poly_pieces)
+
 
 x = np.arange(0, 7, 1)
 y = np.array([0, 1, -1, 5, 1, 1, 5])

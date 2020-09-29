@@ -1,17 +1,20 @@
-import numpy as np
-from P1_astar import DetOccupancyGrid2D, AStar
-from P2_rrt import *
-from scipy.interpolate import splrep, splev
 import matplotlib.pyplot as plt
+import numpy as np
+from P1_astar import AStar, DetOccupancyGrid2D
+from scipy.interpolate import splev, splrep
+
 import HW1.P1_differential_flatness as P1
 from HW1.P2_pose_stabilization import *
 from HW1.P3_trajectory_tracking import *
+from P2_rrt import *
+
 
 class SwitchingController(object):
     """
     Uses one controller to initially track a trajectory, then switches to a 
     second controller to regulate to the final goal.
     """
+
     def __init__(self, traj_controller, pose_controller, t_before_switch):
         self.traj_controller = traj_controller
         self.pose_controller = pose_controller
@@ -31,6 +34,7 @@ class SwitchingController(object):
             return self.traj_controller.compute_control(x, y, th, t)
         else:
             return self.pose_controller.compute_control(x, y, th, t)
+
 
 def compute_smoothed_traj(path, V_des, alpha, dt):
     """
@@ -54,7 +58,8 @@ def compute_smoothed_traj(path, V_des, alpha, dt):
         x1, y1 = path[i]
         x2, y2 = path[i+1]
         distances[i] = ((x2-x1)**2 + (y2-y1)**2)**0.5
-    timesteps = map(lambda distance: round((distance / V_des) + 0.5), distances)
+    timesteps = map(lambda distance: round(
+        (distance / V_des) + 0.5), distances)
     intervals = np.zeros(len(path))
     for i in range(1, len(intervals)):
         intervals[i] = intervals[i-1] + timesteps[i-1] * dt
@@ -66,11 +71,16 @@ def compute_smoothed_traj(path, V_des, alpha, dt):
     total_time = intervals[-1]
     times = np.linspace(0, total_time, total_time/dt)
     smooth_traj = np.zeros((len(times), 7))
-    smooth_traj[:,0], smooth_traj[:,1] = splev(times, tck_x), splev(times, tck_y)
-    smooth_traj[:,3], smooth_traj[:,4] = splev(times, tck_x, der=1), splev(times, tck_y, der=1)
-    smooth_traj[:,2] = np.vectorize(math.atan2)(smooth_traj[:,4], smooth_traj[:,3])
-    smooth_traj[:,5], smooth_traj[:,6] = splev(times, tck_x, der=2), splev(times, tck_y, der=2)
+    smooth_traj[:, 0], smooth_traj[:, 1] = splev(
+        times, tck_x), splev(times, tck_y)
+    smooth_traj[:, 3], smooth_traj[:, 4] = splev(
+        times, tck_x, der=1), splev(times, tck_y, der=1)
+    smooth_traj[:, 2] = np.vectorize(math.atan2)(
+        smooth_traj[:, 4], smooth_traj[:, 3])
+    smooth_traj[:, 5], smooth_traj[:, 6] = splev(
+        times, tck_x, der=2), splev(times, tck_y, der=2)
     return smooth_traj, times
+
 
 def modify_traj_with_limits(traj, t, V_max, om_max, dt):
     """

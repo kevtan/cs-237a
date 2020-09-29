@@ -1,19 +1,26 @@
-import numpy as np
-import random
 import math
+import random
+
 import matplotlib.pyplot as plt
+import numpy as np
 from dubins import path_length, path_sample
-from utils import plot_line_segments, line_line_intersection
+
+from utils import line_line_intersection, plot_line_segments
 
 # Represents a motion planning problem to be solved using the RRT algorithm
+
+
 class RRTConnect(object):
 
     def __init__(self, statespace_lo, statespace_hi, x_init, x_goal, obstacles):
-        self.statespace_lo = np.array(statespace_lo)    # state space lower bound (e.g., [-5, -5])
-        self.statespace_hi = np.array(statespace_hi)    # state space upper bound (e.g., [5, 5])
+        # state space lower bound (e.g., [-5, -5])
+        self.statespace_lo = np.array(statespace_lo)
+        # state space upper bound (e.g., [5, 5])
+        self.statespace_hi = np.array(statespace_hi)
         self.x_init = np.array(x_init)                  # initial state
         self.x_goal = np.array(x_goal)                  # goal state
-        self.obstacles = obstacles                      # obstacle set (line segments)
+        # obstacle set (line segments)
+        self.obstacles = obstacles
         self.path = None        # the final path as a list of states
 
     def is_free_motion(self, obstacles, x1, x2):
@@ -29,7 +36,8 @@ class RRTConnect(object):
         Output:
             Boolean True/False
         """
-        raise NotImplementedError("is_free_motion must be overriden by a subclass of RRTConnect")
+        raise NotImplementedError(
+            "is_free_motion must be overriden by a subclass of RRTConnect")
 
     def find_nearest_forward(self, V, x):
         """
@@ -43,7 +51,8 @@ class RRTConnect(object):
         Output:
             Integer index of nearest point in V steering forward from x
         """
-        raise NotImplementedError("find_nearest_forward must be overriden by a subclass of RRTConnect")
+        raise NotImplementedError(
+            "find_nearest_forward must be overriden by a subclass of RRTConnect")
 
     def find_nearest_backward(self, V, x):
         """
@@ -57,7 +66,8 @@ class RRTConnect(object):
         Output:
             Integer index of nearest point in V steering backward from x
         """
-        raise NotImplementedError("find_nearest_backward must be overriden by a subclass of RRTConnect")
+        raise NotImplementedError(
+            "find_nearest_backward must be overriden by a subclass of RRTConnect")
 
     def steer_towards_forward(self, x1, x2, eps):
         """
@@ -73,7 +83,8 @@ class RRTConnect(object):
         Output:
             State (numpy vector) resulting from bounded steering
         """
-        raise NotImplementedError("steer_towards must be overriden by a subclass of RRTConnect")
+        raise NotImplementedError(
+            "steer_towards must be overriden by a subclass of RRTConnect")
 
     def steer_towards_backward(self, x1, x2, eps):
         """
@@ -89,7 +100,8 @@ class RRTConnect(object):
         Output:
             State (numpy vector) resulting from bounded steering
         """
-        raise NotImplementedError("steer_towards_backward must be overriden by a subclass of RRTConnect")
+        raise NotImplementedError(
+            "steer_towards_backward must be overriden by a subclass of RRTConnect")
 
     def random_state(self):
         """Returns a random state in the free space."""
@@ -110,7 +122,8 @@ class RRTConnect(object):
             curr_fw = P_fw[curr_fw]
         path_fw.reverse()
         # find the subpath in the backward tree
-        curr_bw = self.find_nearest_backward(V_bw[range(n_bw), :], intersection)
+        curr_bw = self.find_nearest_backward(
+            V_bw[range(n_bw), :], intersection)
         while curr_bw != -1:
             path_bw.append(V_bw[curr_bw])
             curr_bw = P_bw[curr_bw]
@@ -119,7 +132,7 @@ class RRTConnect(object):
     def add_to_tree(self, tree, node, parent_index):
         """Adds a new node to a tree, given its parent's index in the tree."""
         n = tree[2]
-        tree[0][n,:], tree[1][n] = node, parent_index
+        tree[0][n, :], tree[1][n] = node, parent_index
         tree[2] += 1
 
     def grow_fw_tree(self, fw_tree, bw_tree, eps):
@@ -131,7 +144,7 @@ class RRTConnect(object):
         V_bw, _, n_bw = bw_tree
         # sample point (x_rand) and steer towards it (x_near)
         x_rand = self.random_state()
-        x_near_index = self.find_nearest_forward(V_fw[range(n_fw),:], x_rand)
+        x_near_index = self.find_nearest_forward(V_fw[range(n_fw), :], x_rand)
         x_near = V_fw[x_near_index]
         x_new = self.steer_towards_forward(x_near, x_rand, eps)
         # check if new path violates state space constraints
@@ -139,15 +152,18 @@ class RRTConnect(object):
             # add vertex and associated edge
             self.add_to_tree(fw_tree, x_new, x_near_index)
             # find nearest point in backward tree (x_connect) to the (x_new)
-            x_connect_index = self.find_nearest_backward(V_bw[range(n_bw),:], x_new)
+            x_connect_index = self.find_nearest_backward(
+                V_bw[range(n_bw), :], x_new)
             x_connect = V_bw[x_connect_index]
             while True:
                 # repeatedly try to extend (x_connect) towards (x_new)
-                x_newconnect = self.steer_towards_backward(x_new, x_connect, eps)
+                x_newconnect = self.steer_towards_backward(
+                    x_new, x_connect, eps)
                 if self.is_free_motion(self.obstacles, x_newconnect, x_connect):
                     self.add_to_tree(bw_tree, x_newconnect, x_connect_index)
                     if np.array_equal(x_newconnect, x_new):
-                        self.path = self.reconstruct_path(fw_tree, bw_tree, x_newconnect)
+                        self.path = self.reconstruct_path(
+                            fw_tree, bw_tree, x_newconnect)
                         return True
                     x_connect = x_newconnect
                 else:
@@ -164,7 +180,7 @@ class RRTConnect(object):
         V_fw, _, n_fw = fw_tree
         # sample point (x_rand) and steer towards it (x_near)
         x_rand = self.random_state()
-        x_near_index = self.find_nearest_backward(V_bw[range(n_bw),:], x_rand)
+        x_near_index = self.find_nearest_backward(V_bw[range(n_bw), :], x_rand)
         x_near = V_bw[x_near_index]
         x_new = self.steer_towards_backward(x_rand, x_near, eps)
         # check if new path violates state space constraints
@@ -172,15 +188,18 @@ class RRTConnect(object):
             # add vertex and associated edge
             self.add_to_tree(bw_tree, x_new, x_near_index)
             # find nearest point in backward tree (x_connect) to the (x_new)
-            x_connect_index = self.find_nearest_forward(V_fw[range(n_fw),:], x_new)
+            x_connect_index = self.find_nearest_forward(
+                V_fw[range(n_fw), :], x_new)
             x_connect = V_fw[x_connect_index]
             while True:
                 # repeatedly try to extend (x_connect) towards (x_new)
-                x_newconnect = self.steer_towards_forward(x_connect, x_new, eps)
+                x_newconnect = self.steer_towards_forward(
+                    x_connect, x_new, eps)
                 if self.is_free_motion(self.obstacles, x_connect, x_newconnect):
                     self.add_to_tree(fw_tree, x_newconnect, x_connect_index)
                     if np.array_equal(x_newconnect, x_new):
-                        self.path = self.reconstruct_path(bw_tree, fw_tree, x_newconnect)
+                        self.path = self.reconstruct_path(
+                            bw_tree, fw_tree, x_newconnect)
                         return True
                     x_connect = x_newconnect
                 else:
@@ -188,7 +207,7 @@ class RRTConnect(object):
         # new path violates state space constraints or unable to connect backward tree
         return False
 
-    def solve(self, eps, max_iters = 1000):
+    def solve(self, eps, max_iters=1000):
         """
         Uses RRT-Connect to perform bidirectional RRT, with a forward tree
         rooted at self.x_init and a backward tree rooted at self.x_goal, with
@@ -199,25 +218,24 @@ class RRTConnect(object):
             eps: maximum steering distance
             max_iters: maximum number of RRT iterations (early termination
                 is possible when a feasible solution is found)
-                
+
         Output:
             None officially (just plots), but see the "Intermediate Outputs"
             descriptions below
         """
-        
+
         state_dim = len(self.x_init)
 
         # represent the forward tree
         V_fw = np.zeros((max_iters, state_dim))     # nodes
-        V_fw[0,:] = self.x_init
+        V_fw[0, :] = self.x_init
         n_fw = 1                                    # number of nodes
         P_fw = -np.ones(max_iters, dtype=int)       # nodal relationships
         fw_tree = [V_fw, P_fw, n_fw]
-        
 
         # represent the backward tree
         V_bw = np.zeros((max_iters, state_dim))     # nodes
-        V_bw[0,:] = self.x_goal
+        V_bw[0, :] = self.x_goal
         n_bw = 1                                    # number of nodes
         P_bw = -np.ones(max_iters, dtype=int)       # nodal relationships
         bw_tree = [V_bw, P_bw, n_bw]
@@ -237,24 +255,30 @@ class RRTConnect(object):
 
         plt.figure()
         self.plot_problem()
-        self.plot_tree(V_fw, P_fw, color="blue", linewidth=.5, label="RRTConnect forward tree")
-        self.plot_tree_backward(V_bw, P_bw, color="purple", linewidth=.5, label="RRTConnect backward tree")
-        
+        self.plot_tree(V_fw, P_fw, color="blue", linewidth=.5,
+                       label="RRTConnect forward tree")
+        self.plot_tree_backward(
+            V_bw, P_bw, color="purple", linewidth=.5, label="RRTConnect backward tree")
+
         if success:
             self.plot_path(color="green", linewidth=2, label="solution path")
-            plt.scatter(V_fw[:n_fw,0], V_fw[:n_fw,1], color="blue")
-            plt.scatter(V_bw[:n_bw,0], V_bw[:n_bw,1], color="purple")
-        plt.scatter(V_fw[:n_fw,0], V_fw[:n_fw,1], color="blue")
-        plt.scatter(V_bw[:n_bw,0], V_bw[:n_bw,1], color="purple")
+            plt.scatter(V_fw[:n_fw, 0], V_fw[:n_fw, 1], color="blue")
+            plt.scatter(V_bw[:n_bw, 0], V_bw[:n_bw, 1], color="purple")
+        plt.scatter(V_fw[:n_fw, 0], V_fw[:n_fw, 1], color="blue")
+        plt.scatter(V_bw[:n_bw, 0], V_bw[:n_bw, 1], color="purple")
 
         plt.show()
 
     def plot_problem(self):
-        plot_line_segments(self.obstacles, color="red", linewidth=2, label="obstacles")
-        plt.scatter([self.x_init[0], self.x_goal[0]], [self.x_init[1], self.x_goal[1]], color="green", s=30, zorder=10)
+        plot_line_segments(self.obstacles, color="red",
+                           linewidth=2, label="obstacles")
+        plt.scatter([self.x_init[0], self.x_goal[0]], [
+                    self.x_init[1], self.x_goal[1]], color="green", s=30, zorder=10)
         plt.annotate(r"$x_{init}$", self.x_init[:2] + [.2, 0], fontsize=16)
         plt.annotate(r"$x_{goal}$", self.x_goal[:2] + [.2, 0], fontsize=16)
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.03), fancybox=True, ncol=3)
+        plt.legend(loc='upper center', bbox_to_anchor=(
+            0.5, -0.03), fancybox=True, ncol=3)
+
 
 class GeometricRRTConnect(RRTConnect):
     """
@@ -289,14 +313,16 @@ class GeometricRRTConnect(RRTConnect):
         return True
 
     def plot_tree(self, V, P, **kwargs):
-        plot_line_segments([(V[P[i],:], V[i,:]) for i in range(V.shape[0]) if P[i] >= 0], **kwargs)
+        plot_line_segments([(V[P[i], :], V[i, :])
+                            for i in range(V.shape[0]) if P[i] >= 0], **kwargs)
 
     def plot_tree_backward(self, V, P, **kwargs):
         self.plot_tree(V, P, **kwargs)
 
     def plot_path(self, **kwargs):
         path = np.array(self.path)
-        plt.plot(path[:,0], path[:,1], **kwargs)
+        plt.plot(path[:, 0], path[:, 1], **kwargs)
+
 
 class DubinsRRTConnect(RRTConnect):
     """
@@ -310,9 +336,11 @@ class DubinsRRTConnect(RRTConnect):
     http://planning.cs.uiuc.edu/node821.html
     for more details on how these steering trajectories are derived.
     """
+
     def __init__(self, statespace_lo, statespace_hi, x_init, x_goal, obstacles, turning_radius):
         self.turning_radius = turning_radius
-        super(self.__class__, self).__init__(statespace_lo, statespace_hi, x_init, x_goal, obstacles)
+        super(self.__class__, self).__init__(
+            statespace_lo, statespace_hi, x_init, x_goal, obstacles)
 
     def reverse_heading(self, x):
         """
@@ -359,8 +387,9 @@ class DubinsRRTConnect(RRTConnect):
         else:
             return path_sample(x1, x2, 1.001*self.turning_radius, eps)[0][-1]
 
-    def is_free_motion(self, obstacles, x1, x2, resolution = np.pi/6):
-        pts = path_sample(x1, x2, self.turning_radius, self.turning_radius*resolution)[0]
+    def is_free_motion(self, obstacles, x1, x2, resolution=np.pi/6):
+        pts = path_sample(x1, x2, self.turning_radius,
+                          self.turning_radius*resolution)[0]
         pts.append(x2)
         for i in range(len(pts) - 1):
             for line in obstacles:
@@ -368,29 +397,32 @@ class DubinsRRTConnect(RRTConnect):
                     return False
         return True
 
-    def plot_tree(self, V, P, resolution = np.pi/24, **kwargs):
+    def plot_tree(self, V, P, resolution=np.pi/24, **kwargs):
         line_segments = []
         for i in range(V.shape[0]):
             if P[i] >= 0:
-                pts = path_sample(V[P[i],:], V[i,:], self.turning_radius, self.turning_radius*resolution)[0]
-                pts.append(V[i,:])
+                pts = path_sample(
+                    V[P[i], :], V[i, :], self.turning_radius, self.turning_radius*resolution)[0]
+                pts.append(V[i, :])
                 for j in range(len(pts) - 1):
                     line_segments.append((pts[j], pts[j+1]))
         plot_line_segments(line_segments, **kwargs)
 
-    def plot_tree_backward(self, V, P, resolution = np.pi/24, **kwargs):
+    def plot_tree_backward(self, V, P, resolution=np.pi/24, **kwargs):
         line_segments = []
         for i in range(V.shape[0]):
             if P[i] >= 0:
-                pts = path_sample(V[i,:], V[P[i],:], self.turning_radius, self.turning_radius*resolution)[0]
-                pts.append(V[P[i],:])
+                pts = path_sample(
+                    V[i, :], V[P[i], :], self.turning_radius, self.turning_radius*resolution)[0]
+                pts.append(V[P[i], :])
                 for j in range(len(pts) - 1):
                     line_segments.append((pts[j], pts[j+1]))
         plot_line_segments(line_segments, **kwargs)
 
-    def plot_path(self, resolution = np.pi/24, **kwargs):
+    def plot_path(self, resolution=np.pi/24, **kwargs):
         pts = []
         path = np.array(self.path)
         for i in range(path.shape[0] - 1):
-            pts.extend(path_sample(path[i], path[i+1], self.turning_radius, self.turning_radius*resolution)[0])
+            pts.extend(path_sample(
+                path[i], path[i+1], self.turning_radius, self.turning_radius*resolution)[0])
         plt.plot([x for x, y, th in pts], [y for x, y, th in pts], **kwargs)

@@ -1,9 +1,11 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import random
-import dubins
 import math
-from utils import plot_line_segments, line_line_intersection
+import random
+
+import dubins
+import matplotlib.pyplot as plt
+import numpy as np
+
+from utils import line_line_intersection, plot_line_segments
 
 
 class RRT(object):
@@ -278,7 +280,6 @@ class DubinsRRT(RRT):
             return x2
         else:
             return dubins.path_sample(x1, x2, 1.001*self.turning_radius, eps)[0][1]
-
 
     def is_free_motion(self, obstacles, x1, x2, resolution=np.pi/6):
         from dubins import path_sample
