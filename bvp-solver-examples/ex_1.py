@@ -36,7 +36,7 @@ problem = scikits.bvp_solver.ProblemDefinition(
     boundary_conditions=bc_fun,
 )  # BC function
 
-# Defne initial guess as a tuple (constant solution)
+# Define initial guess as a tuple (constant solution)
 guess = (1.0, 0.0)
 
 # Solve  - returns a solution structure
