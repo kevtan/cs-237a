@@ -1,9 +1,11 @@
-import numpy as np
-import math
 import itertools
+import math
+
+import matplotlib.pyplot as plt
+import numpy as np
 from numpy import linalg
 from scipy.integrate import cumtrapz
-import matplotlib.pyplot as plt
+
 from utils import *
 
 
@@ -65,9 +67,14 @@ def compute_traj(coeffs, tf, N):
     """
     x_coeffs, y_coeffs = coeffs[:4], coeffs[4:]
     times = np.linspace(0, tf, N)
-    polynomial_function = lambda t, coeffs: np.dot(np.array([1, t, t**2, t**3]), coeffs)
-    first_derivative = lambda t, coeffs: np.dot(np.array([0, 1, 2 * t, 3 * t**2]), coeffs)
-    second_derivative = lambda t, coeffs: np.dot(np.array([0, 0, 2, 6 * t]), coeffs)
+
+    def polynomial_function(t, coeffs): return np.dot(
+        np.array([1, t, t**2, t**3]), coeffs)
+
+    def first_derivative(t, coeffs): return np.dot(
+        np.array([0, 1, 2 * t, 3 * t**2]), coeffs)
+    def second_derivative(t, coeffs): return np.dot(
+        np.array([0, 0, 2, 6 * t]), coeffs)
     traj = np.zeros((N, 7))
     for i, time in enumerate(times):
         traj[i][0] = polynomial_function(time, x_coeffs)
@@ -84,7 +91,7 @@ def compute_controls(traj):
     """Takes in N trajectory records and returns a velocity and heading angle
     history (both of length N) that the robot has to execute in order to achieve
     the target trajectory.
-    
+
         Format of each record:
         (x, y, theta, x', y', x", y")
 
@@ -219,7 +226,8 @@ def interpolate_traj(traj, tau, V_tilde, om_tilde, dt, s_f):
     traj_scaled[:, 4] = V_scaled * np.sin(traj_scaled[:, 2])  # yd
     # Compute xy acclerations
     traj_scaled[:, 5] = np.append(
-        np.diff(traj_scaled[:, 3]) / dt, -s_f.V * om_scaled[-1] * np.sin(s_f.th)
+        np.diff(traj_scaled[:, 3]) / dt, -s_f.V *
+        om_scaled[-1] * np.sin(s_f.th)
     )  # xdd
     traj_scaled[:, 6] = np.append(
         np.diff(traj_scaled[:, 4]) / dt, s_f.V * om_scaled[-1] * np.cos(s_f.th)

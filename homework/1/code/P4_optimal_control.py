@@ -1,10 +1,13 @@
-import numpy as np
 import math
-import scikits.bvp_solver
+
 import matplotlib.pyplot as plt
+import numpy as np
+import scikits.bvp_solver
+
 from utils import *
 
 dt = 0.005
+
 
 def ode_fun(tau, z):
     """
@@ -58,7 +61,8 @@ def bc_fun(za, zb):
         x_f - x_fg,
         y_f - y_fg,
         th_f - th_fg,
-        LAMBDA + v ** 2 + om ** 2 + p1_f * v * math.cos(th_f) + p2_f * v * math.sin(th_f) + p3_f * om
+        LAMBDA + v ** 2 + om ** 2 + p1_f * v *
+        math.cos(th_f) + p2_f * v * math.sin(th_f) + p3_f * om
     ])
     return left_residual, right_residual
 
@@ -81,12 +85,13 @@ def solve_bvp(problem_inputs, initial_guess):
 
     # Test if time is reversed in bvp_solver solution
     flip, tf = check_flip(soln(0))
-    t = np.arange(0,tf,dt)
+    t = np.arange(0, tf, dt)
     z = soln(t/tf)
     if flip:
-        z[3:7,:] = -z[3:7,:]
-    z = z.T # solution arranged so that it is [time, state_dim]
+        z[3:7, :] = -z[3:7, :]
+    z = z.T  # solution arranged so that it is [time, state_dim]
     return z
+
 
 def compute_controls(z):
     """
@@ -105,6 +110,7 @@ def compute_controls(z):
         om[0] = -0.5 * p3
     return V, om
 
+
 def main():
     """
     This function solves the specified bvp problem and returns the corresponding optimal contol sequence
@@ -116,25 +122,26 @@ def main():
     Hint: The total time is between 15-25
     """
     problem_inputs = {
-                      'num_ODE' : 7,
-                      'num_parameters' : 0,
-                      'num_left_boundary_conditions' : 3,
-                      'boundary_points' : (0, 1),
-                      'function' : ode_fun,
-                      'boundary_conditions' : bc_fun
-                     }
+        'num_ODE': 7,
+        'num_parameters': 0,
+        'num_left_boundary_conditions': 3,
+        'boundary_points': (0, 1),
+        'function': ode_fun,
+        'boundary_conditions': bc_fun
+    }
     initial_guess = np.array([2.5, 2.5, -0.5, 2.0, 2.0, 0.0, 1.0])
     z = solve_bvp(problem_inputs, initial_guess)
     V, om = compute_controls(z)
     return z, V, om
 
+
 if __name__ == '__main__':
     z, V, om = main()
-    tf = z[0,-1]
-    t = np.arange(0,tf,dt)
-    x = z[:,0]
-    y = z[:,1]
-    th = z[:,2]
+    tf = z[0, -1]
+    t = np.arange(0, tf, dt)
+    x = z[:, 0]
+    y = z[:, 1]
+    th = z[:, 2]
     data = {'z': z, 'V': V, 'om': om}
     save_dict(data, 'data/optimal_control.pkl')
     maybe_makedirs('plots')
@@ -143,19 +150,20 @@ if __name__ == '__main__':
     # plt.rc('font', weight='bold', size=16)
     plt.figure(figsize=(12, 4))
     plt.subplot(1, 2, 1)
-    plt.plot(x, y,'k-',linewidth=2)
-    plt.quiver(x[1:-1:200], y[1:-1:200],np.cos(th[1:-1:200]),np.sin(th[1:-1:200]))
+    plt.plot(x, y, 'k-', linewidth=2)
+    plt.quiver(x[1:-1:200], y[1:-1:200],
+               np.cos(th[1:-1:200]), np.sin(th[1:-1:200]))
     plt.grid('on')
-    plt.plot(0,0,'go',markerfacecolor='green',markersize=15)
-    plt.plot(5,5,'ro',markerfacecolor='red', markersize=15)
+    plt.plot(0, 0, 'go', markerfacecolor='green', markersize=15)
+    plt.plot(5, 5, 'ro', markerfacecolor='red', markersize=15)
     plt.xlabel('X [m]')
     plt.ylabel('Y [m]')
     plt.axis([-1, 6, -1, 6])
     plt.title('Optimal Control Trajectory')
 
     plt.subplot(1, 2, 2)
-    plt.plot(t, V,linewidth=2)
-    plt.plot(t, om,linewidth=2)
+    plt.plot(t, V, linewidth=2)
+    plt.plot(t, om, linewidth=2)
     plt.grid('on')
     plt.xlabel('Time [s]')
     plt.legend(['V [m/s]', '$\omega$ [rad/s]'], loc='best')

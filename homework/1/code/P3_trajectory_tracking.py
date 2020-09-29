@@ -5,8 +5,10 @@ from numpy import linalg
 
 V_PREV_THRES = 0.0001
 
+
 class TrajectoryTracker:
     """ Trajectory tracking controller using differential flatness """
+
     def __init__(self, kpx, kpy, kdx, kdy, V_max=0.5, om_max=1):
         self.kpx = kpx
         self.kpy = kpy
@@ -16,8 +18,9 @@ class TrajectoryTracker:
         self.V_max = V_max
         self.om_max = om_max
 
-        self.coeffs = np.zeros(8) # Polynomial coefficients for x(t) and y(t) as
-                                  # returned by the differential flatness code
+        # Polynomial coefficients for x(t) and y(t) as
+        self.coeffs = np.zeros(8)
+        # returned by the differential flatness code
 
     def reset(self):
         self.V_prev = 0
@@ -38,13 +41,13 @@ class TrajectoryTracker:
             x_d, xd_d, xdd_d, y_d, yd_d, ydd_d: Desired state and derivatives
                 at time t according to self.coeffs
         """
-        x_d = np.interp(t,self.traj_times,self.traj[:,0])
-        y_d = np.interp(t,self.traj_times,self.traj[:,1])
-        xd_d = np.interp(t,self.traj_times,self.traj[:,3])
-        yd_d = np.interp(t,self.traj_times,self.traj[:,4])
-        xdd_d = np.interp(t,self.traj_times,self.traj[:,5])
-        ydd_d = np.interp(t,self.traj_times,self.traj[:,6])
-        
+        x_d = np.interp(t, self.traj_times, self.traj[:, 0])
+        y_d = np.interp(t, self.traj_times, self.traj[:, 1])
+        xd_d = np.interp(t, self.traj_times, self.traj[:, 3])
+        yd_d = np.interp(t, self.traj_times, self.traj[:, 4])
+        xdd_d = np.interp(t, self.traj_times, self.traj[:, 5])
+        ydd_d = np.interp(t, self.traj_times, self.traj[:, 6])
+
         return x_d, xd_d, xdd_d, y_d, yd_d, ydd_d
 
     def compute_control(self, x, y, th, t):

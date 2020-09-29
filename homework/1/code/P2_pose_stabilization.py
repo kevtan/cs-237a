@@ -1,6 +1,8 @@
-import numpy as np
-from utils import wrapToPi
 import math
+
+import numpy as np
+
+from utils import wrapToPi
 
 # command zero velocities once we are this close to the goal
 RHO_THRES = 0.05
@@ -40,7 +42,7 @@ class PoseController:
         angle_to_goal = math.atan2(self.y_g - y, self.x_g - x)
         alpha = wrapToPi(angle_to_goal - th)
         rho = ((self.x_g - x) ** 2 + (self.y_g - y) ** 2) ** 0.5
-        delta = wrapToPi(angle_to_goal - self.th_g )
+        delta = wrapToPi(angle_to_goal - self.th_g)
         if math.fabs(alpha) < ALPHA_THRES and rho < RHO_THRES and math.fabs(delta) < DELTA_THRES:
             return 0, 0
         # compute control inputs
