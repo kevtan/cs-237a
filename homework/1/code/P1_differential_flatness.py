@@ -1,9 +1,7 @@
-import itertools
 import math
 
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy import linalg
 from scipy.integrate import cumtrapz
 
 from utils import *
@@ -68,13 +66,15 @@ def compute_traj(coeffs, tf, N):
     x_coeffs, y_coeffs = coeffs[:4], coeffs[4:]
     times = np.linspace(0, tf, N)
 
-    def polynomial_function(t, coeffs): return np.dot(
-        np.array([1, t, t**2, t**3]), coeffs)
+    def polynomial_function(t, coeffs):
+        return np.dot(np.array([1, t, t ** 2, t ** 3]), coeffs)
 
-    def first_derivative(t, coeffs): return np.dot(
-        np.array([0, 1, 2 * t, 3 * t**2]), coeffs)
-    def second_derivative(t, coeffs): return np.dot(
-        np.array([0, 0, 2, 6 * t]), coeffs)
+    def first_derivative(t, coeffs):
+        return np.dot(np.array([0, 1, 2 * t, 3 * t ** 2]), coeffs)
+
+    def second_derivative(t, coeffs):
+        return np.dot(np.array([0, 0, 2, 6 * t]), coeffs)
+
     traj = np.zeros((N, 7))
     for i, time in enumerate(times):
         traj[i][0] = polynomial_function(time, x_coeffs)
@@ -107,10 +107,12 @@ def compute_controls(traj):
     for i, record in enumerate(traj):
         theta, v_x, v_y = record[2:5]
         V[i] = (v_x ** 2 + v_y ** 2) ** 0.5
-        J = np.array([
-            [math.cos(theta), -V[i] * math.sin(theta)],
-            [math.sin(theta), V[i] * math.cos(theta)]
-        ])
+        J = np.array(
+            [
+                [math.cos(theta), -V[i] * math.sin(theta)],
+                [math.sin(theta), V[i] * math.cos(theta)],
+            ]
+        )
         linear_acceleration_vector = record[-2:]
         om[i] = np.linalg.solve(J, linear_acceleration_vector)[-1]
     return V, om
@@ -226,8 +228,7 @@ def interpolate_traj(traj, tau, V_tilde, om_tilde, dt, s_f):
     traj_scaled[:, 4] = V_scaled * np.sin(traj_scaled[:, 2])  # yd
     # Compute xy acclerations
     traj_scaled[:, 5] = np.append(
-        np.diff(traj_scaled[:, 3]) / dt, -s_f.V *
-        om_scaled[-1] * np.sin(s_f.th)
+        np.diff(traj_scaled[:, 3]) / dt, -s_f.V * om_scaled[-1] * np.sin(s_f.th)
     )  # xdd
     traj_scaled[:, 6] = np.append(
         np.diff(traj_scaled[:, 4]) / dt, s_f.V * om_scaled[-1] * np.cos(s_f.th)
@@ -318,10 +319,10 @@ if __name__ == "__main__":
 
     plt.subplot(2, 2, 3)
     if part_b_complete:
-        h, = plt.plot(t, s, "b-", linewidth=2)
+        (h,) = plt.plot(t, s, "b-", linewidth=2)
         handles = [h]
         labels = ["Original"]
-        h, = plt.plot(tau, s, "r-", linewidth=2)
+        (h,) = plt.plot(tau, s, "r-", linewidth=2)
         handles.append(h)
         labels.append("Scaled")
         plt.legend(handles, labels, loc="best")
