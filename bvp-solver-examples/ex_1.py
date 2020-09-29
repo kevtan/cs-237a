@@ -1,9 +1,5 @@
-import math
-
 import matplotlib.pyplot as plt
 import numpy as np
-import pdb
-from scipy import linalg
 
 import scikits.bvp_solver
 
